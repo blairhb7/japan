@@ -5,6 +5,7 @@ import MoneyConverter from './components/MoneyConverter';
 import AccommodationsTailored from './components/Accommodations';
 import CityExplorer from './components/CityExplorer';
 import cityGuideData from './data/cityGuideData';
+import SupabaseProbe from './components/SupabaseProbe';
 
 
 export default function Home() {
@@ -63,6 +64,7 @@ export default function Home() {
         <section id='events' className="h-full p-4 md:p-10 py-40">
           <div className="">
             <h1 className=" text-3xl lg:text-8xl font-bold">Event List</h1>
+            <SupabaseProbe tripId={tripId} />
           <CityExplorer
         tripId={tripId}
         initialData={cityGuideData}

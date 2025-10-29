@@ -312,11 +312,13 @@ React.useEffect(() => {
 const saveRow = React.useMemo(
     () => debounce(async (row) => {
       try {
-        if (!tripId) return;
+        if (!tripId) {
+          console.warn('[saveRow] Missing tripId, skipping');
+          return;
+        }
   
         const isSynthetic = String(row.id).startsWith('synthetic-');
         if (isSynthetic) {
-          // First write for this city: create/overwrite the DB row
           const payload = { trip_id: tripId, city: row.city, data: row.data };
           const { data, error } = await supabase
             .from('city_guides')
@@ -324,9 +326,14 @@ const saveRow = React.useMemo(
             .select('id, trip_id, city, data, updated_at')
             .maybeSingle();
   
-          if (error) { setLastError(error.message || 'Upsert failed'); return; }
+          if (error) {
+            console.error('[saveRow upsert synthetic] ERROR:', error);
+            setLastError(error.message || 'Upsert failed');
+            return;
+          }
+          console.log('[saveRow upsert synthetic] OK:', data);
   
-          // Replace synthetic row with the real DB row
+          // Replace synthetic
           setRows(prev => {
             if (!prev) return prev;
             const idx = prev.findIndex(r => r.city === row.city);
@@ -346,7 +353,13 @@ const saveRow = React.useMemo(
           .eq('id', row.id)
           .select('id, updated_at')
           .maybeSingle();
-        if (error) { setLastError(error.message || 'Update failed'); return; }
+  
+        if (error) {
+          console.error('[saveRow update] ERROR:', error);
+          setLastError(error.message || 'Update failed');
+          return;
+        }
+        console.log('[saveRow update] OK:', data);
   
         setRows(prev => {
           if (!prev) return prev;
@@ -356,12 +369,16 @@ const saveRow = React.useMemo(
           next[idx] = { ...prev[idx], updated_at: data.updated_at };
           return next;
         });
+      } catch (e) {
+        console.error('[saveRow] EXCEPTION:', e);
+        setLastError(String(e));
       } finally {
         markSaving(row.id, false);
       }
     }, 600),
     [markSaving, tripId]
   );
+  
   
   const updateCityData = React.useCallback((city, updater) => {
     setRows(prev => {

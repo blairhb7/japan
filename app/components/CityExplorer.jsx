@@ -99,6 +99,86 @@ export default function CityExplorer({
   const [appliedFromProp, setAppliedFromProp] = React.useState(false);
 
   // --- optimistic: show initialData immediately so it's never blank ---
+// A) Auto-apply initialData -> DB once rows exist
+
+
+React.useEffect(() => {
+  (async () => {
+    if (!autoApplyInitialData) return;
+    if (appliedFromProp) return;
+    if (!tripId || !initialData) return;
+    if (!rows || rows.length === 0) return;
+
+    // overwrite only cities present in initialData
+    const entries = Object.entries(initialData).filter(([city]) => [
+      'Tokyo','Kyoto','Osaka','Hakone','Kobe','Wakayama'
+    ].includes(city));
+
+    for (const [city, block] of entries) {
+      const r = rows.find(row => row.city === city);
+      if (!r) continue;
+      const payload = normalizeCityData(block);
+      const { error } = await supabase
+        .from('city_guides')
+        .upsert({ trip_id: tripId, city, data: payload }, { onConflict: 'trip_id,city' });
+      if (error) { setLastError(error.message || `Apply failed for ${city}`); }
+    }
+
+    // refresh to replace synthetic ids
+    const { data: refreshed } = await supabase
+      .from('city_guides')
+      .select('id, trip_id, city, data, updated_at')
+      .eq('trip_id', tripId);
+    if (refreshed) {
+      setRows(refreshed
+        .sort((a, b) => ['Tokyo','Kyoto','Osaka','Hakone','Kobe','Wakayama'].indexOf(a.city)
+                      - ['Tokyo','Kyoto','Osaka','Hakone','Kobe','Wakayama'].indexOf(b.city))
+        .map(r => ({ ...r, data: ensureGuideData(r.data) })));
+    }
+    setAppliedFromProp(true);
+  })();
+}, [autoApplyInitialData, appliedFromProp, initialData, rows, tripId]);
+
+// B) If any synthetic rows remain after first render, push them automatically
+const [autoPushedSynthetic, setAutoPushedSynthetic] = React.useState(false);
+
+React.useEffect(() => {
+  (async () => {
+    if (autoPushedSynthetic) return;
+    if (!tripId || !rows || rows.length === 0) return;
+    const hasSynthetic = rows.some(r => String(r.id).startsWith('synthetic-'));
+    if (!hasSynthetic) return;
+
+    const payload = rows.map(r => ({
+      trip_id: tripId,
+      city: r.city,
+      data: r.data
+    }));
+    const { error } = await supabase
+      .from('city_guides')
+      .upsert(payload, { onConflict: 'trip_id,city' });
+    if (error) { setLastError(error.message || 'Bulk upsert failed'); return; }
+
+    const { data: refreshed } = await supabase
+      .from('city_guides')
+      .select('id, trip_id, city, data, updated_at')
+      .eq('trip_id', tripId);
+    if (refreshed) {
+      setRows(refreshed
+        .sort((a, b) => ['Tokyo','Kyoto','Osaka','Hakone','Kobe','Wakayama'].indexOf(a.city)
+                      - ['Tokyo','Kyoto','Osaka','Hakone','Kobe','Wakayama'].indexOf(b.city))
+        .map(r => ({ ...r, data: ensureGuideData(r.data) })));
+    }
+    setAutoPushedSynthetic(true);
+  })();
+}, [rows, tripId, autoPushedSynthetic]);
+
+
+
+
+
+
+
   React.useEffect(() => {
     if (!initialData || rows) return;
     const synthetic = CITIES.map(city => {
@@ -228,12 +308,37 @@ export default function CityExplorer({
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [tripId]);
-
-  const saveRow = React.useMemo(
+// inside CityExplorer component
+const saveRow = React.useMemo(
     () => debounce(async (row) => {
       try {
-        if (!tripId) return; // optimistic-only mode
-        if (String(row.id).startsWith('synthetic-')) return; // skip synthetic ids
+        if (!tripId) return;
+  
+        const isSynthetic = String(row.id).startsWith('synthetic-');
+        if (isSynthetic) {
+          // First write for this city: create/overwrite the DB row
+          const payload = { trip_id: tripId, city: row.city, data: row.data };
+          const { data, error } = await supabase
+            .from('city_guides')
+            .upsert(payload, { onConflict: 'trip_id,city' })
+            .select('id, trip_id, city, data, updated_at')
+            .maybeSingle();
+  
+          if (error) { setLastError(error.message || 'Upsert failed'); return; }
+  
+          // Replace synthetic row with the real DB row
+          setRows(prev => {
+            if (!prev) return prev;
+            const idx = prev.findIndex(r => r.city === row.city);
+            if (idx === -1) return prev;
+            const next = [...prev];
+            next[idx] = { ...data, data: ensureGuideData(data.data) };
+            return next;
+          });
+          return;
+        }
+  
+        // Normal update
         markSaving(row.id, true);
         const { data, error } = await supabase
           .from('city_guides')
@@ -241,11 +346,8 @@ export default function CityExplorer({
           .eq('id', row.id)
           .select('id, updated_at')
           .maybeSingle();
-        if (error) {
-          console.error('[city_guides update]', error);
-          setLastError(error.message || 'Update failed');
-          return;
-        }
+        if (error) { setLastError(error.message || 'Update failed'); return; }
+  
         setRows(prev => {
           if (!prev) return prev;
           const idx = prev.findIndex(r => r.id === row.id);
@@ -260,7 +362,7 @@ export default function CityExplorer({
     }, 600),
     [markSaving, tripId]
   );
-
+  
   const updateCityData = React.useCallback((city, updater) => {
     setRows(prev => {
       if (!prev) return prev;

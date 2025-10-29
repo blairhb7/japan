@@ -15,7 +15,7 @@ export default function Home() {
     <div>
       <main className="w-screen">
         <section className="grid grid-cols-1">
-          <div className="h-screen items-center justify-center bg-cover bg-fixed bg-[url('https://wallpapers.com/images/hd/japan-landscape-7oivwrn8hrzce9uv.jpg')]">
+          <div className="h-screen items-center justify-center bg-cover lg:bg-fixed bg-[url('https://wallpapers.com/images/hd/japan-landscape-7oivwrn8hrzce9uv.jpg')]">
             <div className="h-full relative text-white flex flex-col justify-center items-center">
               <h1 className="text-3xl md:text-7xl xl:text-9xl font-extrabold">Japan</h1>
               <h2 className="text-xl lg:text-3xl">Tokyo | Kyoto | Osaka | Hakone</h2>
@@ -23,11 +23,13 @@ export default function Home() {
           </div>
           <div className="bg-red-600 text-white flex flex-col justify-center items-center w-full p-10">
             <h2 className=" text-4xl flex font-bold py-3 ">Helpful Reminders</h2>
-            <ul className=" text-2xl gap-4 font-semibold grid grid-cols-2">
+            <ul className=" text-xl gap-10 font-semibold grid grid-cols-2">
               <li className="">Tourism registry/ customs</li>
               <li className="">7/11 best money exchange</li>
               <li className="">Buy Food at Bullet Train station</li>
               <li className="">Luggage Hold locations</li>
+              <li className="">Osaka city pass good deal</li>
+              <li className="">Hakone pass</li>
             </ul>
           </div>
 
@@ -40,7 +42,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section className=" h-[600px] bg-cover bg-fixed bg-[url('https://wallpapercave.com/wp/wp9417657.jpg')]">
+        <section className=" h-[600px] bg-auto lg:bg-cover lg:bg-fixed bg-[url('https://wallpapercave.com/wp/wp9417657.jpg')]">
           
         </section>
         <section id='accommodations' className="h-full py-20">
@@ -65,6 +67,7 @@ export default function Home() {
         tripId={tripId}
         initialData={cityGuideData}
         autoApplyInitialData={true} // set true to overwrite DB once on load
+        requireDB={false}
       />
           </div>
         </section>

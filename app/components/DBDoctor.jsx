@@ -48,7 +48,7 @@ export default function DBDoctor({ tripId }) {
   };
 
   return (
-    <div className="rounded-xl border bg-white p-4 text-xs space-y-3">
+    <div className="rounded-xl hidden border bg-white p-4 text-xs space-y-3">
       <div className="font-mono text-sm">DB Doctor</div>
       <div>ENV url present: <b>{String(envOK.url)}</b> | anon present: <b>{String(envOK.anon)}</b></div>
       <div>tripId: <code className="bg-neutral-100 px-1 rounded">{tripId}</code></div>

@@ -382,7 +382,7 @@ function DayCard({
   return (
     <section className="rounded-2xl border p-4 shadow-sm bg-amber-400 text-black font-bold">
       <header className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold">Day {day_index}</h3>
+        <h3 className="text-2xl font-semibold">Day {day_index}</h3>
         <span className="text-xs text-neutral-500" aria-live="polite">
           {isSaving ? 'saving…' : 'saved'}
         </span>
@@ -390,7 +390,7 @@ function DayCard({
 
       {/* City select (per day) */}
       <div className="mb-3">
-        <label className="text-xs text-neutral-600">
+        <label className="text-xs text-black">
           City
           <div className="mt-1 flex gap-2">
             <select
@@ -425,7 +425,7 @@ function DayCard({
             <label className="text-xs text-black">
               Arrival
               <input
-                className="mt-1 md:w-[400px] rounded-xl border px-3 py-2 text-sm"
+                className="mt-1 md:w-auto rounded-xl border px-3 py-2 text-sm"
                 value={arrivalText}
                 placeholder="e.g., HND 10:15 AM"
                 onChange={(e) => onChangeArrival(e.target.value)}
@@ -481,7 +481,7 @@ function DayCard({
         .map((ev) => {
           const links = linksFor(ev.address);
           return (
-            <div key={ev.id} className="rounded-xl bg-white flex-col border p-2">
+            <div key={ev.id} className="rounded-xl bg-white flex-col border my-4 p-2">
               <div className="grid grid-cols-1 gap-2">
                 <select
                   className="rounded-lg border grid grid-cols-1  px-2 py-1 text-xs"

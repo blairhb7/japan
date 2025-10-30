@@ -43,7 +43,7 @@ export default function SupabaseProbe({ tripId }) {
   };
 
   return (
-    <div className="rounded-xl border p-3 text-xs space-y-2 bg-white">
+    <div className="rounded-xl border p-3 text-xs space-y-2 hidden bg-white">
       <div className="font-mono">Supabase Probe</div>
       <div>tripId: <code className="bg-neutral-100 px-1 rounded">{tripId || '(missing)'}</code></div>
       <button onClick={run} className="rounded border px-2 py-1">Run Probe</button>

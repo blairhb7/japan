@@ -341,7 +341,7 @@ export default function CityExplorer({
   return (
     <section className={["space-y-4", className].filter(Boolean).join(' ')}>
       {/* Debug / controls */}
-      <div className="flex flex-wrap items-center gap-2 text-xs rounded-xl border bg-white px-3 py-2">
+      <div className="flex-wrap hidden items-center gap-2 text-xs rounded-xl border bg-white px-3 py-2">
         <div><span className="text-neutral-500">tripId:</span> <code className="bg-neutral-100 px-1 rounded">{tripId || '—(optimistic)'}</code></div>
         <div className="hidden sm:block text-neutral-300">•</div>
         <div><span className="text-neutral-500">rows:</span> {rows ? rows.length : (loading ? 'loading…' : '0')}</div>
@@ -356,7 +356,7 @@ export default function CityExplorer({
             type="button"
             onClick={() => setActiveCity(c)}
             className={[
-              "rounded-full border px-3 py-1 text-xs",
+              "rounded-full border px-3 py-1 text-xl",
               activeCity === c ? 'bg-black text-white' : 'hover:bg-neutral-50'
             ].join(' ')}
           >
@@ -373,7 +373,7 @@ export default function CityExplorer({
             type="button"
             onClick={() => setActiveCat(cat)}
             className={[
-              "rounded-full border px-3 py-1 text-xs",
+              "rounded-full border px-3 py-1 text-md",
               activeCat === cat ? 'bg-black text-white' : 'hover:bg-neutral-50'
             ].join(' ')}
           >

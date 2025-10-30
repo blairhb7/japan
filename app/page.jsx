@@ -24,21 +24,23 @@ export default function Home() {
     <div>
       <main className="w-screen">
         <section className="grid grid-cols-1">
-          <div className="h-screen items-center justify-center bg-cover lg:bg-fixed bg-[url('https://wallpapers.com/images/hd/japan-landscape-7oivwrn8hrzce9uv.jpg')]">
+          <div className="h-screen items-center justify-center bg-cover bg-top-left lg:bg-fixed bg-[url('https://wallpapercave.com/wp/wp9092061.jpg')]">
             <div className="h-full relative text-white flex flex-col justify-center items-center">
               <h1 className="text-3xl md:text-7xl xl:text-9xl font-extrabold">Japan</h1>
               <h2 className="text-xl lg:text-3xl">Tokyo | Kyoto | Osaka | Hakone</h2>
             </div>
           </div>
-          <div className="bg-red-600 text-white flex flex-col justify-center items-center w-full p-10">
-            <h2 className=" text-4xl flex font-bold py-3 ">Helpful Reminders</h2>
-            <ul className=" text-xl gap-10 font-semibold grid grid-cols-2">
+          <div className="bg-red-600 text-white flex flex-col  w-full p-10">
+            <h2 className=" text-5xl flex font-bold py-5 ">Helpful Reminders</h2>
+            <ul className=" text-xl gap-2 font-light grid grid-cols-1 lg:grid-cols-2">
               <li className="">Tourism registry/ customs</li>
               <li className="">7/11 best money exchange</li>
               <li className="">Buy Food at Bullet Train station</li>
               <li className="">Luggage Hold locations</li>
               <li className="">Osaka city pass good deal</li>
               <li className="">Hakone pass</li>
+              <li className="">E sim (Phone Data)</li>
+              <li className="">For an emergency in Japan, dial 110 for police, 119 for fire or ambulance, or 118 for the Coast Guard. For non-emergency medical advice, you can call #7119. For tourist assistance during an emergency, the Japan Visitor Hotline is available at 050-3816-2787. </li>
             </ul>
           </div>
 
@@ -51,7 +53,7 @@ export default function Home() {
             </div>
           </div>
         </section>
-        <section className=" h-[600px] bg-auto lg:bg-cover lg:bg-fixed bg-[url('https://wallpapercave.com/wp/wp9417657.jpg')]">
+        <section className=" h-[600px] bg-center bg-cover lg:bg-fixed bg-[url('https://wallpapercave.com/wp/wp9417657.jpg')]">
           
         </section>
         <section id='accommodations' className="h-full py-20">
@@ -59,7 +61,7 @@ export default function Home() {
           <AccommodationsTailored tripId={tripId} />
           </div>
         </section>
-        <section className=" grid grid-cols-2 lg:grid-cols-4 bg-fixed bg-cover h-[600px] ">
+        <section className=" grid grid-cols-2 lg:grid-cols-4  h-[600px] ">
           <div className=" bg-cover bg-[url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRarWQBKGQ6N-_Iw8T7cW3_4MK40xGtEI46PmZa5zG0z1oTk9f-rMkWExdykNZv6s_4j3w&usqp=CAU')]"></div>
           <div className=" bg-cover bg-[url('https://www.japanrailpassnow.com/wp-content/uploads/2016/09/Tokyo-Tower-Twilight.jpg')]"></div>
           <div className=" bg-cover bg-[url('https://www.neverendingvoyage.com/wp-content/uploads/2019/09/kyoto-japan-26.jpg')]"></div>
@@ -71,9 +73,9 @@ export default function Home() {
         </section>
         <section id='events' className="h-full p-4 md:p-10 py-40">
           <div className="">
-            <h1 className=" text-3xl lg:text-8xl font-bold">Event List</h1>
-            <SupabaseProbe tripId={tripId} />
-            <DBDoctor tripId={tripId} />
+            <h1 className=" text-3xl py-10 lg:text-8xl font-bold">Event List</h1>
+            <SupabaseProbe className='hidden' tripId={tripId} />
+            <DBDoctor className='hidden'  tripId={tripId} />
           <CityExplorer
         tripId={tripId}
         initialData={cityGuideData}

@@ -6,6 +6,7 @@ import AccommodationsTailored from './components/Accommodations';
 import CityExplorer from './components/CityExplorer';
 import cityGuideData from './data/cityGuideData';
 import SupabaseProbe from './components/SupabaseProbe';
+import DBDoctor from './components/DBDoctor';
 
 
 export default function Home() {
@@ -65,6 +66,7 @@ export default function Home() {
           <div className="">
             <h1 className=" text-3xl lg:text-8xl font-bold">Event List</h1>
             <SupabaseProbe tripId={tripId} />
+            <DBDoctor tripId={tripId} />
           <CityExplorer
         tripId={tripId}
         initialData={cityGuideData}

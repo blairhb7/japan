@@ -1,7 +1,7 @@
 // app/components/SupabaseProbe.jsx
 'use client';
 import * as React from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient/supabaseClient';
 
 export default function SupabaseProbe({ tripId }) {
   const [msg, setMsg] = React.useState('Ready');

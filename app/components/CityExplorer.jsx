@@ -21,6 +21,43 @@ const InstagramEmbed = dynamic(
 const CITIES = ['Tokyo', 'Kyoto', 'Osaka', 'Hakone', 'Kobe', 'Wakayama'];
 const CATEGORIES = ['Eat', 'Shop', 'Drink', 'Visit', 'Onsen'];
 
+
+// inside CityExplorer
+const [appliedFromProp, setAppliedFromProp] = React.useState(false);
+
+React.useEffect(() => {
+  (async () => {
+    if (!autoApplyInitialData || appliedFromProp) return;
+    if (!tripId || !initialData) return;
+
+    // only seed if this trip has zero rows
+    const existing = await supabase
+      .from('city_guides')
+      .select('id', { count: 'exact', head: false })
+      .eq('trip_id', tripId);
+
+    if (existing.error) return;
+    if ((existing.data || []).length > 0) { setAppliedFromProp(true); return; }
+
+    // seed once
+    const entries = Object.entries(initialData);
+    const payload = entries.map(([city, block]) => ({
+      trip_id: tripId,
+      city,
+      data: {
+        eat:   (block.eat||[]).map((x,i)=>({order:i+1,...x})),
+        shop:  (block.shop||[]).map((x,i)=>({order:i+1,...x})),
+        drink: (block.drink||[]).map((x,i)=>({order:i+1,...x})),
+        visit: (block.visit||[]).map((x,i)=>({order:i+1,...x})),
+        onsen: (block.onsen||[]).map((x,i)=>({order:i+1,...x}))
+      }
+    }));
+    await supabase.from('city_guides').upsert(payload, { onConflict: 'trip_id,city' });
+    setAppliedFromProp(true);
+  })();
+}, [autoApplyInitialData, appliedFromProp, initialData, tripId, supabase]);
+
+
 /* ---------- helpers ---------- */
 function debounce(fn, delay = 700) {
   let t;
@@ -216,62 +253,41 @@ React.useEffect(() => {
   React.useEffect(() => {
     let mounted = true;
     (async () => {
-      if (!tripId) {
-        if (requireDB) {
-          setLastError('Missing tripId prop');
-          setLoading(false);
-        }
-        return; // keep optimistic render
-      }
+      if (!tripId) { setLoading(false); return; }
+  
       setLoading(true);
-      setLastError('');
-
       const { data, error } = await supabase
         .from('city_guides')
         .select('id, trip_id, city, data, updated_at')
         .eq('trip_id', tripId)
-        .in('city', CITIES)
         .order('city', { ascending: true });
-
+  
+      if (!mounted) return;
+  
       if (error) {
         console.error('[city_guides select]', error);
         setLastError(error.message || 'Select failed');
         setLoading(false);
         return;
       }
-
-      // insert missing rows
-      const existingCities = new Set(data?.map(r => r.city) || []);
-      const toInsert = CITIES
-        .filter(c => !existingCities.has(c))
-        .map(c => ({ trip_id: tripId, city: c, data: emptyGuide() }));
-
-      let inserted = [];
-      if (toInsert.length > 0) {
-        const ins = await supabase
-          .from('city_guides')
-          .insert(toInsert)
-          .select('id, trip_id, city, data, updated_at')
-          .order('city', { ascending: true });
-        if (ins.error) {
-          console.error('[city_guides insert]', ins.error);
-          setLastError(ins.error.message || 'Insert failed');
-        } else {
-          inserted = ins.data || [];
+  
+      const normalized = (data || []).map(r => ({
+        ...r,
+        data: {
+          eat:   Array.isArray(r.data?.eat)   ? r.data.eat   : [],
+          shop:  Array.isArray(r.data?.shop)  ? r.data.shop  : [],
+          drink: Array.isArray(r.data?.drink) ? r.data.drink : [],
+          visit: Array.isArray(r.data?.visit) ? r.data.visit : [],
+          onsen: Array.isArray(r.data?.onsen) ? r.data.onsen : [],
         }
-      }
-
-      const all = [...(data || []), ...inserted]
-        .sort((a, b) => CITIES.indexOf(a.city) - CITIES.indexOf(b.city))
-        .map(r => ({ ...r, data: ensureGuideData(r.data) }));
-
-      if (!mounted) return;
-      if (all.length > 0) setRows(all); // replace synthetic with real DB rows
+      }));
+  
+      setRows(normalized);
       setLoading(false);
     })();
     return () => { mounted = false; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tripId, requireDB]);
+  }, [tripId, supabase]);
+  
 
   // Auto-apply initialData -> DB (optional)
   React.useEffect(() => {
@@ -312,40 +328,34 @@ React.useEffect(() => {
 const saveRow = React.useMemo(
     () => debounce(async (row) => {
       try {
-        if (!tripId) {
-          console.warn('[saveRow] Missing tripId, skipping');
-          return;
-        }
+        if (!tripId) return;
+        const synthetic = String(row.id || '').startsWith('synthetic-');
   
-        const isSynthetic = String(row.id).startsWith('synthetic-');
-        if (isSynthetic) {
+        if (synthetic) {
           const payload = { trip_id: tripId, city: row.city, data: row.data };
           const { data, error } = await supabase
             .from('city_guides')
             .upsert(payload, { onConflict: 'trip_id,city' })
             .select('id, trip_id, city, data, updated_at')
             .maybeSingle();
+          if (error) { console.error('[upsert]', error); setLastError(error.message); return; }
   
-          if (error) {
-            console.error('[saveRow upsert synthetic] ERROR:', error);
-            setLastError(error.message || 'Upsert failed');
-            return;
-          }
-          console.log('[saveRow upsert synthetic] OK:', data);
-  
-          // Replace synthetic
+          // replace synthetic with real row
           setRows(prev => {
             if (!prev) return prev;
             const idx = prev.findIndex(r => r.city === row.city);
             if (idx === -1) return prev;
             const next = [...prev];
-            next[idx] = { ...data, data: ensureGuideData(data.data) };
+            next[idx] = { ...data, data: {
+              eat: data.data?.eat||[], shop: data.data?.shop||[], drink: data.data?.drink||[],
+              visit: data.data?.visit||[], onsen: data.data?.onsen||[]
+            }};
             return next;
           });
           return;
         }
   
-        // Normal update
+        // normal update
         markSaving(row.id, true);
         const { data, error } = await supabase
           .from('city_guides')
@@ -353,13 +363,7 @@ const saveRow = React.useMemo(
           .eq('id', row.id)
           .select('id, updated_at')
           .maybeSingle();
-  
-        if (error) {
-          console.error('[saveRow update] ERROR:', error);
-          setLastError(error.message || 'Update failed');
-          return;
-        }
-        console.log('[saveRow update] OK:', data);
+        if (error) { console.error('[update]', error); setLastError(error.message); return; }
   
         setRows(prev => {
           if (!prev) return prev;
@@ -369,15 +373,13 @@ const saveRow = React.useMemo(
           next[idx] = { ...prev[idx], updated_at: data.updated_at };
           return next;
         });
-      } catch (e) {
-        console.error('[saveRow] EXCEPTION:', e);
-        setLastError(String(e));
       } finally {
         markSaving(row.id, false);
       }
     }, 600),
-    [markSaving, tripId]
+    [markSaving, tripId, supabase]
   );
+  
   
   
   const updateCityData = React.useCallback((city, updater) => {

@@ -1,6 +1,6 @@
 'use client';
 import * as React from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient/supabaseClient';
 
 export default function DBDoctor({ tripId }) {
   const [status, setStatus] = React.useState('Idle');

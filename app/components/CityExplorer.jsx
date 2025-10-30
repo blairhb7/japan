@@ -4,7 +4,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 // FIX THE PATH below to match your project structure:
 // If this file is at app/components/CityExplorer.jsx and client is at /lib/supabaseClient.js:
-import { supabase } from '../../lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient/supabaseClient';
 
 // Embeds – CSR only
 const YouTubeEmbed = dynamic(

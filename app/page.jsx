@@ -9,6 +9,13 @@ import SupabaseProbe from './components/SupabaseProbe';
 import DBDoctor from './components/DBDoctor';
 
 
+// app/page.jsx
+export const dynamic = 'force-dynamic'; // no SSG; render at request time
+export const revalidate = 0;            // disable ISR too
+
+// (rest of your file)
+
+
 export default function Home() {
   // Use a real UUID; the component will insert a trip row if missing (per our earlier code)
   const tripId = '00000000-0000-0000-0000-000000000001';

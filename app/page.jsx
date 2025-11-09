@@ -4,6 +4,8 @@ import TripItineraryGrid from './components/TripItineraryGrid';
 import MoneyConverter from './components/MoneyConverter';
 import AccommodationsTailored from './components/Accommodations';
 import CityExplorer from './components/CityExplorer';
+import HakoneOnsenSection from './components/HakoneOnsenSection';
+import HakoneOnsenServer from "./components/HakoneOnsenServer";
 import cityGuideData from './data/cityGuideData';
 import SupabaseProbe from './components/SupabaseProbe';
 import DBDoctor from './components/DBDoctor';
@@ -84,7 +86,9 @@ export default function Home() {
       />
           </div>
         </section>
-        
+        <section className="">
+        <HakoneOnsenSection />
+        </section>
       </main>
     </div>
   );

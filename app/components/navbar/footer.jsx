@@ -29,6 +29,7 @@ export function Navbar({
     
     { href: '#accommodations', label: 'Accommodations' },
     { href: '#events', label: 'Events' },
+    { href: '#onsens', label: 'Onsens' },
   ],
   
   logo = (
